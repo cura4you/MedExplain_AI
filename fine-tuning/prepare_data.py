@@ -25,15 +25,26 @@ CONDITIONS = [
     "borderline high cholesterol",
     "mild dehydration",
 ]
+PROMPT_TEMPLATE = (
+    "System: You are MedExplain, a medical report explanation assistant.\n"
+    "You must be clear, concise, and avoid giving medical advice.\n"
+    "User report type: {report_type}\n"
+    "User report text: {report_text}\n"
+    "Task: Provide a structured explanation for a non-medical reader.\n"
+    "Required format:\n"
+    "- Summary: <plain-language summary>\n"
+    "- Key findings: <comma-separated list>\n"
+    "- Recommendations: <safe next steps>\n"
+    "- Disclaimer: <safety notice>\n"
+)
+DISCLAIMER = (
+    "This information is for education only and is not medical advice. "
+    "Consult a licensed clinician for diagnosis or treatment."
+)
 
 
 def build_prompt(report_text: str, report_type: str) -> str:
-    return (
-        "You are a medical report explanation assistant.\n"
-        f"Report type: {report_type}\n"
-        f"Report text: {report_text}\n"
-        "Provide a clear, structured explanation for a non-medical reader."
-    )
+    return PROMPT_TEMPLATE.format(report_type=report_type, report_text=report_text)
 
 
 def build_completion(report_type: str, key_findings: List[str]) -> str:
@@ -41,7 +52,8 @@ def build_completion(report_type: str, key_findings: List[str]) -> str:
     return (
         f"Summary: This {report_type} report indicates {findings}.\n"
         f"Key findings: {', '.join(key_findings)}.\n"
-        "Recommendations: Discuss these findings with a licensed clinician."
+        "Recommendations: Discuss these findings with a licensed clinician.\n"
+        f"Disclaimer: {DISCLAIMER}"
     )
 
 
