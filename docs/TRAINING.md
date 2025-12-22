@@ -3,6 +3,9 @@
 ## Overview
 This project uses a data-prep pipeline to generate JSONL training/eval data, then fine-tunes a base LLM with LoRA adapters.
 
+## Base model
+- Hugging Face: `baidu/ERNIE-4.5-VL-28B-A3B-Thinking`
+
 ## Workflow
 1) Prepare data with `fine-tuning/prepare_data.py`.
 2) Train with `fine-tuning/train_model.py`.
