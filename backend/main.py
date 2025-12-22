@@ -21,6 +21,21 @@ class AnalyzeResponse(BaseModel):
 
 app = FastAPI(title="MedExplain AI API")
 
+DISCLAIMER = (
+    "This information is for education only and is not medical advice. "
+    "Consult a licensed clinician for diagnosis or treatment."
+)
+KNOWN_FINDINGS = [
+    "cardiomegaly",
+    "pneumonia",
+    "anemia",
+    "elevated glucose",
+    "cholesterol",
+    "renal",
+    "dehydration",
+    "no acute disease",
+]
+
 origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
@@ -33,9 +48,23 @@ app.add_middleware(
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)
 def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
+    report_text = request.report_text.strip()
+    report_type = request.report_type.strip()
+
+    lowered = report_text.lower()
+    findings = [term for term in KNOWN_FINDINGS if term in lowered]
+    if not findings:
+        findings = ["no specific findings detected from provided text"]
+
+    summary = f"This {report_type} report mentions {', '.join(findings)}."
+    recommendations = [
+        "Review this report with a licensed clinician.",
+        "Seek urgent care if symptoms worsen or new symptoms appear.",
+    ]
+
     return AnalyzeResponse(
-        summary="Analysis pending implementation.",
-        key_findings=[],
-        recommendations=[],
-        disclaimer="For informational purposes only.",
+        summary=summary,
+        key_findings=findings,
+        recommendations=recommendations,
+        disclaimer=DISCLAIMER,
     )
