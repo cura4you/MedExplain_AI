@@ -1,0 +1,34 @@
+model:
+  name: unsloth/llama-3-8b-bnb-4bit
+  max_seq_length: 2048
+  load_in_4bit: true
+
+data:
+  train_path: fine-tuning/data/train_data.jsonl
+  eval_path: fine-tuning/data/eval_data.jsonl
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+training:
+  output_dir: fine-tuning/output
+  batch_size: 2
+  grad_accum_steps: 4
+  epochs: 1
+  learning_rate: 2e-4
+  warmup_steps: 50
+  logging_steps: 10
+  save_steps: 100
+  eval_steps: 100
+  fp16: true
+  bf16: false
