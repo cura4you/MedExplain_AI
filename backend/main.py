@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import os
-from typing import List
+from typing import List, Dict, Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+import httpx
 
 
 class AnalyzeRequest(BaseModel):
@@ -36,21 +37,27 @@ KNOWN_FINDINGS = [
     "no acute disease",
 ]
 
-origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[origin.strip() for origin in origins],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+HF_TOKEN = os.getenv("HF_TOKEN", "")
+MODEL_NAME = os.getenv("MODEL_NAME", "baidu/ERNIE-4.5-VL-28B-A3B-Thinking")
+HF_INFERENCE_URL = os.getenv("HF_INFERENCE_URL", f"https://api-inference.huggingface.co/models/{MODEL_NAME}")
 
 
-@app.post("/api/analyze", response_model=AnalyzeResponse)
-def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
-    report_text = request.report_text.strip()
-    report_type = request.report_type.strip()
+def build_prompt(report_text: str, report_type: str) -> str:
+    return (
+        "System: You are MedExplain, a medical report explanation assistant.\n"
+        "You must be clear, concise, and avoid giving medical advice.\n"
+        f"User report type: {report_type}\n"
+        f"User report text: {report_text}\n"
+        "Task: Provide a structured explanation for a non-medical reader.\n"
+        "Required format:\n"
+        "- Summary: <plain-language summary>\n"
+        "- Key findings: <comma-separated list>\n"
+        "- Recommendations: <safe next steps>\n"
+        "- Disclaimer: <safety notice>\n"
+    )
 
+
+def fallback_parse(report_text: str, report_type: str) -> AnalyzeResponse:
     lowered = report_text.lower()
     findings = [term for term in KNOWN_FINDINGS if term in lowered]
     if not findings:
@@ -68,3 +75,78 @@ def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
         recommendations=recommendations,
         disclaimer=DISCLAIMER,
     )
+
+
+def parse_structured_response(text: str) -> AnalyzeResponse:
+    summary = ""
+    findings: List[str] = []
+    recommendations: List[str] = []
+    disclaimer = DISCLAIMER
+
+    for line in text.splitlines():
+        if line.lower().startswith("summary:"):
+            summary = line.split(":", 1)[1].strip()
+        elif line.lower().startswith("key findings:"):
+            raw = line.split(":", 1)[1].strip()
+            findings = [item.strip() for item in raw.split(",") if item.strip()]
+        elif line.lower().startswith("recommendations:"):
+            raw = line.split(":", 1)[1].strip()
+            recommendations = [item.strip() for item in raw.split(",") if item.strip()]
+        elif line.lower().startswith("disclaimer:"):
+            disclaimer = line.split(":", 1)[1].strip()
+
+    if not summary:
+        summary = "Summary unavailable from model response."
+    if not findings:
+        findings = ["not provided"]
+    if not recommendations:
+        recommendations = ["Review this report with a licensed clinician."]
+
+    return AnalyzeResponse(
+        summary=summary,
+        key_findings=findings,
+        recommendations=recommendations,
+        disclaimer=disclaimer,
+    )
+
+
+def call_hf_inference(prompt: str) -> Dict[str, Any]:
+    headers = {"Authorization": f"Bearer {HF_TOKEN}"} if HF_TOKEN else {}
+    payload = {"inputs": prompt, "parameters": {"max_new_tokens": 300}}
+    with httpx.Client(timeout=60.0) as client:
+        response = client.post(HF_INFERENCE_URL, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+
+origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[origin.strip() for origin in origins],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.post("/api/analyze", response_model=AnalyzeResponse)
+def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
+    report_text = request.report_text.strip()
+    report_type = request.report_type.strip()
+
+    prompt = build_prompt(report_text, report_type)
+
+    try:
+        result = call_hf_inference(prompt)
+    except Exception:
+        return fallback_parse(report_text, report_type)
+
+    generated_text = ""
+    if isinstance(result, list) and result:
+        generated_text = result[0].get("generated_text", "")
+    elif isinstance(result, dict) and "generated_text" in result:
+        generated_text = result.get("generated_text", "")
+
+    if not generated_text:
+        return fallback_parse(report_text, report_type)
+
+    return parse_structured_response(generated_text)

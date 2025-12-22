@@ -7,6 +7,10 @@ cp .env.example .env
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+## Environment
+- `HF_TOKEN` should be set for Hugging Face Inference API access.
+- `MODEL_NAME` defaults to `baidu/ERNIE-4.5-VL-28B-A3B-Thinking`.
+
 ## API
 - `POST /api/analyze` with JSON body:
 ```json
