@@ -76,6 +76,21 @@ def write_jsonl(path: str, rows: List[Dict[str, str]]) -> None:
             handle.write(json.dumps(row) + "\n")
 
 
+def write_stats(path: str, total: int, train_count: int, eval_count: int, examples: List[Example]) -> None:
+    type_counts: Dict[str, int] = {report_type: 0 for report_type in REPORT_TYPES}
+    for example in examples:
+        type_counts[example.report_type] += 1
+
+    payload = {
+        "total": total,
+        "train": train_count,
+        "eval": eval_count,
+        "report_type_counts": type_counts,
+    }
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Prepare fine-tuning data.")
     parser.add_argument("--total", type=int, default=8000)
@@ -103,11 +118,16 @@ def main() -> None:
     ]
 
     os.makedirs(args.output_dir, exist_ok=True)
+    processed_dir = os.path.join(args.output_dir, "processed")
+    os.makedirs(processed_dir, exist_ok=True)
     train_path = os.path.join(args.output_dir, "train_data.jsonl")
     eval_path = os.path.join(args.output_dir, "eval_data.jsonl")
 
     write_jsonl(train_path, train_rows)
     write_jsonl(eval_path, eval_rows)
+
+    stats_path = os.path.join(processed_dir, "stats.json")
+    write_stats(stats_path, total, train_count, eval_count, examples)
 
 
 if __name__ == "__main__":
