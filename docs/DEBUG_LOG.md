@@ -31,6 +31,12 @@
 - Fix: No local fix applied; command still completed.
 
 ## 2025-02-14
+- Command: `cat <<'EOF' > backend/.env.example ... EOF`
+- Error: `/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted`
+- Diagnosis: Homebrew shellenv attempts to invoke `/bin/ps`, which is blocked by the current sandbox.
+- Fix: No local fix applied; command still completed.
+
+## 2025-02-14
 - Command: `git checkout -b phase-setup-debug-log`
 - Error: `fatal: cannot lock ref 'refs/heads/phase-setup-debug-log': Unable to create '/Users/momossss/Documents/GitHub/MedExplain_AI/.git/refs/heads/phase-setup-debug-log.lock': Operation not permitted`
 - Diagnosis: Sandbox permissions prevented writing to `.git/refs` for branch creation.
