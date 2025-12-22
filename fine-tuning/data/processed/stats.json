@@ -1,0 +1,11 @@
+{
+  "total": 8000,
+  "train": 7200,
+  "eval": 800,
+  "report_type_counts": {
+    "radiology": 2008,
+    "lab": 2011,
+    "clinical": 1951,
+    "other": 2030
+  }
+}
