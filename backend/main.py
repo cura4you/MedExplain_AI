@@ -84,16 +84,18 @@ def parse_structured_response(text: str) -> AnalyzeResponse:
     disclaimer = DISCLAIMER
 
     for line in text.splitlines():
-        if line.lower().startswith("summary:"):
-            summary = line.split(":", 1)[1].strip()
-        elif line.lower().startswith("key findings:"):
-            raw = line.split(":", 1)[1].strip()
+        cleaned = line.strip().lstrip("-•* ").strip()
+        lowered = cleaned.lower()
+        if lowered.startswith("summary:") or lowered.startswith("summary -"):
+            summary = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
+        elif lowered.startswith("key findings:") or lowered.startswith("key findings -"):
+            raw = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
             findings = [item.strip() for item in raw.split(",") if item.strip()]
-        elif line.lower().startswith("recommendations:"):
-            raw = line.split(":", 1)[1].strip()
+        elif lowered.startswith("recommendations:") or lowered.startswith("recommendations -"):
+            raw = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
             recommendations = [item.strip() for item in raw.split(",") if item.strip()]
-        elif line.lower().startswith("disclaimer:"):
-            disclaimer = line.split(":", 1)[1].strip()
+        elif lowered.startswith("disclaimer:") or lowered.startswith("disclaimer -"):
+            disclaimer = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
 
     if not summary:
         summary = "Summary unavailable from model response."
@@ -113,10 +115,16 @@ def parse_structured_response(text: str) -> AnalyzeResponse:
 def call_hf_inference(prompt: str) -> Dict[str, Any]:
     headers = {"Authorization": f"Bearer {HF_TOKEN}"} if HF_TOKEN else {}
     payload = {"inputs": prompt, "parameters": {"max_new_tokens": 300}}
-    with httpx.Client(timeout=60.0) as client:
-        response = client.post(HF_INFERENCE_URL, headers=headers, json=payload)
-        response.raise_for_status()
-        return response.json()
+    retries = 2
+    for attempt in range(retries + 1):
+        try:
+            with httpx.Client(timeout=60.0) as client:
+                response = client.post(HF_INFERENCE_URL, headers=headers, json=payload)
+                response.raise_for_status()
+                return response.json()
+        except httpx.HTTPError:
+            if attempt == retries:
+                raise
 
 origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
@@ -145,6 +153,8 @@ def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
         generated_text = result[0].get("generated_text", "")
     elif isinstance(result, dict) and "generated_text" in result:
         generated_text = result.get("generated_text", "")
+    elif isinstance(result, dict) and "error" in result:
+        return fallback_parse(report_text, report_type)
 
     if not generated_text:
         return fallback_parse(report_text, report_type)
