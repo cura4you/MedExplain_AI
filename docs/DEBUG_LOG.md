@@ -121,6 +121,12 @@
 - Fix: Run uvicorn without `--reload` in this environment.
 
 ## 2025-02-14
+- Command: `/Users/momossss/Documents/GitHub/MedExplain_AI/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000`
+- Error: `error while attempting to bind on address ('0.0.0.0', 8000): operation not permitted`
+- Diagnosis: The sandbox blocks binding to 0.0.0.0.
+- Fix: Bind to `127.0.0.1` instead.
+
+## 2025-02-14
 - Command: `git checkout -b phase-setup-debug-log`
 - Error: `fatal: cannot lock ref 'refs/heads/phase-setup-debug-log': Unable to create '/Users/momossss/Documents/GitHub/MedExplain_AI/.git/refs/heads/phase-setup-debug-log.lock': Operation not permitted`
 - Diagnosis: Sandbox permissions prevented writing to `.git/refs` for branch creation.
