@@ -109,6 +109,12 @@
 - Fix: Create and use a virtual environment (`python3 -m venv .venv && source .venv/bin/activate`) before installing.
 
 ## 2025-02-14
+- Command: `python3 -m venv .venv && source .venv/bin/activate && python3 -m pip install -r backend/requirements.txt`
+- Error: `ERROR: No matching distribution found for fastapi`
+- Diagnosis: Network access is restricted, so pip cannot reach PyPI to download dependencies.
+- Fix: Re-run pip install with network access approval or install via an allowed networked environment.
+
+## 2025-02-14
 - Command: `git checkout -b phase-setup-debug-log`
 - Error: `fatal: cannot lock ref 'refs/heads/phase-setup-debug-log': Unable to create '/Users/momossss/Documents/GitHub/MedExplain_AI/.git/refs/heads/phase-setup-debug-log.lock': Operation not permitted`
 - Diagnosis: Sandbox permissions prevented writing to `.git/refs` for branch creation.
