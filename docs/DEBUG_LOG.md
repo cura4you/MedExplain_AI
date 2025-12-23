@@ -115,6 +115,12 @@
 - Fix: Re-run pip install with network access approval or install via an allowed networked environment.
 
 ## 2025-02-14
+- Command: `/Users/momossss/Documents/GitHub/MedExplain_AI/.venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+- Error: `ERROR:    [Errno 1] Operation not permitted`
+- Diagnosis: The auto-reloader attempted a system call blocked by the sandbox.
+- Fix: Run uvicorn without `--reload` in this environment.
+
+## 2025-02-14
 - Command: `git checkout -b phase-setup-debug-log`
 - Error: `fatal: cannot lock ref 'refs/heads/phase-setup-debug-log': Unable to create '/Users/momossss/Documents/GitHub/MedExplain_AI/.git/refs/heads/phase-setup-debug-log.lock': Operation not permitted`
 - Diagnosis: Sandbox permissions prevented writing to `.git/refs` for branch creation.
