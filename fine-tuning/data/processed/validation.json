@@ -1,0 +1,12 @@
+{
+  "train": {
+    "rows": 7200,
+    "missing_fields": 0,
+    "missing_sections": 0
+  },
+  "eval": {
+    "rows": 800,
+    "missing_fields": 0,
+    "missing_sections": 0
+  }
+}
