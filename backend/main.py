@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Tuple
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,6 +40,8 @@ KNOWN_FINDINGS = [
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 MODEL_NAME = os.getenv("MODEL_NAME", "baidu/ERNIE-4.5-VL-28B-A3B-Thinking")
 HF_INFERENCE_URL = os.getenv("HF_INFERENCE_URL", f"https://api-inference.huggingface.co/models/{MODEL_NAME}")
+MODEL_LOCAL_PATH = os.getenv("MODEL_LOCAL_PATH", "")
+_LOCAL_MODEL: Optional[Tuple[Any, Any]] = None
 
 
 def build_prompt(report_text: str, report_type: str) -> str:
@@ -126,6 +128,31 @@ def call_hf_inference(prompt: str) -> Dict[str, Any]:
             if attempt == retries:
                 raise
 
+
+def load_local_model() -> Tuple[Any, Any]:
+    global _LOCAL_MODEL
+    if _LOCAL_MODEL is not None:
+        return _LOCAL_MODEL
+
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import torch
+
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_LOCAL_PATH)
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_LOCAL_PATH,
+        device_map="auto",
+        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+    )
+    _LOCAL_MODEL = (model, tokenizer)
+    return _LOCAL_MODEL
+
+
+def call_local_inference(prompt: str) -> str:
+    model, tokenizer = load_local_model()
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+    outputs = model.generate(**inputs, max_new_tokens=300)
+    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
 origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
@@ -142,6 +169,13 @@ def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
     report_type = request.report_type.strip()
 
     prompt = build_prompt(report_text, report_type)
+
+    if MODEL_LOCAL_PATH and os.path.exists(MODEL_LOCAL_PATH):
+        try:
+            generated_text = call_local_inference(prompt)
+            return parse_structured_response(generated_text)
+        except Exception:
+            return fallback_parse(report_text, report_type)
 
     try:
         result = call_hf_inference(prompt)
