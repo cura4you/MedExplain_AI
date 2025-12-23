@@ -5,6 +5,7 @@ type AnalyzeResponse = {
   key_findings: string[]
   recommendations: string[]
   disclaimer: string
+  source?: string
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -103,6 +104,12 @@ const App = () => {
           )}
           {result && (
             <div className="result-grid">
+              {result.source && (
+                <article className="source">
+                  <h3>Source</h3>
+                  <p>{result.source}</p>
+                </article>
+              )}
               <article>
                 <h3>Summary</h3>
                 <p>{result.summary}</p>

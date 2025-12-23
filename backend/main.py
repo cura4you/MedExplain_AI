@@ -18,6 +18,7 @@ class AnalyzeResponse(BaseModel):
     key_findings: List[str]
     recommendations: List[str]
     disclaimer: str
+    source: str
 
 
 app = FastAPI(title="MedExplain AI API")
@@ -76,10 +77,11 @@ def fallback_parse(report_text: str, report_type: str) -> AnalyzeResponse:
         key_findings=findings,
         recommendations=recommendations,
         disclaimer=DISCLAIMER,
+        source="fallback",
     )
 
 
-def parse_structured_response(text: str) -> AnalyzeResponse:
+def parse_structured_response(text: str, source: str) -> AnalyzeResponse:
     summary = ""
     findings: List[str] = []
     recommendations: List[str] = []
@@ -111,6 +113,7 @@ def parse_structured_response(text: str) -> AnalyzeResponse:
         key_findings=findings,
         recommendations=recommendations,
         disclaimer=disclaimer,
+        source=source,
     )
 
 
@@ -173,7 +176,7 @@ def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
     if MODEL_LOCAL_PATH and os.path.exists(MODEL_LOCAL_PATH):
         try:
             generated_text = call_local_inference(prompt)
-            return parse_structured_response(generated_text)
+            return parse_structured_response(generated_text, source="local_model")
         except Exception:
             return fallback_parse(report_text, report_type)
 
@@ -193,4 +196,4 @@ def analyze_report(request: AnalyzeRequest) -> AnalyzeResponse:
     if not generated_text:
         return fallback_parse(report_text, report_type)
 
-    return parse_structured_response(generated_text)
+    return parse_structured_response(generated_text, source="hf_inference")

@@ -208,6 +208,10 @@ textarea {
   animation: fadeIn 0.5s ease both;
 }
 
+.source {
+  border-left: 4px solid var(--highlight);
+}
+
 .result-grid h3 {
   margin-top: 0;
   font-size: 1.1rem;
