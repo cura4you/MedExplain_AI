@@ -91,6 +91,12 @@
 - Fix: No local fix applied; command still completed.
 
 ## 2025-02-14
+- Command: `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+- Error: `zsh:1: command not found: uvicorn`
+- Diagnosis: `uvicorn` is not installed in the current environment.
+- Fix: Install backend dependencies (e.g., `pip install -r backend/requirements.txt`) and retry.
+
+## 2025-02-14
 - Command: `git checkout -b phase-setup-debug-log`
 - Error: `fatal: cannot lock ref 'refs/heads/phase-setup-debug-log': Unable to create '/Users/momossss/Documents/GitHub/MedExplain_AI/.git/refs/heads/phase-setup-debug-log.lock': Operation not permitted`
 - Diagnosis: Sandbox permissions prevented writing to `.git/refs` for branch creation.
