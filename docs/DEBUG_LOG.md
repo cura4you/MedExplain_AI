@@ -103,6 +103,12 @@
 - Fix: Use `python3 -m pip install -r backend/requirements.txt` or set up a venv.
 
 ## 2025-02-14
+- Command: `python3 -m pip install -r backend/requirements.txt`
+- Error: `error: externally-managed-environment`
+- Diagnosis: System Python is managed by Homebrew (PEP 668) and blocks global installs.
+- Fix: Create and use a virtual environment (`python3 -m venv .venv && source .venv/bin/activate`) before installing.
+
+## 2025-02-14
 - Command: `git checkout -b phase-setup-debug-log`
 - Error: `fatal: cannot lock ref 'refs/heads/phase-setup-debug-log': Unable to create '/Users/momossss/Documents/GitHub/MedExplain_AI/.git/refs/heads/phase-setup-debug-log.lock': Operation not permitted`
 - Diagnosis: Sandbox permissions prevented writing to `.git/refs` for branch creation.
