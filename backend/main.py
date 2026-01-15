@@ -23,6 +23,17 @@ class AnalyzeResponse(BaseModel):
 
 app = FastAPI(title="MedExplain AI API")
 
+
+@app.get("/")
+def read_root():
+    return {"message": "MedExplain AI API is running. POST to /api/analyze to use the model."}
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 DISCLAIMER = (
     "This information is for education only and is not medical advice. "
     "Consult a licensed clinician for diagnosis or treatment."
