@@ -1,5 +1,13 @@
 # Debug Log
 
+## 2026-05-27
+
+### Bug: silent parse failure when model uses label aliases
+- **Symptom:** `POST /api/analyze` returned HTTP 200 with `"summary": "Summary unavailable from model response."` and no error field — frontend showed broken output with no visible alert.
+- **Root cause:** `parse_structured_response()` only matched the exact string `"summary:"`. When the model responded with `"Overview:"`, `"Impression:"`, or `"Assessment:"` instead, the summary field was silently left empty.
+- **Fix:** Introduced `_LABEL_ALIASES` — a canonical-key → accepted-prefixes map. Parser now matches any known alias for each section label. Added `parse_warning: bool` field to `AnalyzeResponse` so the frontend can surface a visible warning when parsing partially fails.
+- **Additional:** Expanded `KNOWN_FINDINGS` from 8 → 20 terms to improve fallback coverage. Updated `build_prompt()` to instruct the model to use labels exactly. Updated `docs/API.md` to document `parse_warning` and `source` values. Frontend now shows a yellow warning banner when `parse_warning` is true or `source === "fallback"`. Added Clear button and character counter to the input panel.
+
 ## 2025-02-14
 - Command: `git status -sb`
 - Error: `/opt/homebrew/Library/Homebrew/cmd/shellenv.sh: line 18: /bin/ps: Operation not permitted`

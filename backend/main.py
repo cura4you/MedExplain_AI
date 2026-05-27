@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import re
 from typing import List, Dict, Any, Optional, Tuple
 
 from fastapi import FastAPI
@@ -19,6 +20,7 @@ class AnalyzeResponse(BaseModel):
     recommendations: List[str]
     disclaimer: str
     source: str
+    parse_warning: bool = False  # True when the model response couldn't be fully parsed
 
 
 app = FastAPI(title="MedExplain AI API")
@@ -38,16 +40,7 @@ DISCLAIMER = (
     "This information is for education only and is not medical advice. "
     "Consult a licensed clinician for diagnosis or treatment."
 )
-KNOWN_FINDINGS = [
-    "cardiomegaly",
-    "pneumonia",
-    "anemia",
-    "elevated glucose",
-    "cholesterol",
-    "renal",
-    "dehydration",
-    "no acute disease",
-]
+
 
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 MODEL_NAME = os.getenv("MODEL_NAME", "baidu/ERNIE-4.5-VL-28B-A3B-Thinking")
@@ -63,12 +56,54 @@ def build_prompt(report_text: str, report_type: str) -> str:
         f"User report type: {report_type}\n"
         f"User report text: {report_text}\n"
         "Task: Provide a structured explanation for a non-medical reader.\n"
-        "Required format:\n"
+        "Required format — use EXACTLY these labels:\n"
         "- Summary: <plain-language summary>\n"
         "- Key findings: <comma-separated list>\n"
         "- Recommendations: <safe next steps>\n"
         "- Disclaimer: <safety notice>\n"
     )
+
+# Expanded keyword list — covers more common report terms
+KNOWN_FINDINGS = [
+    "cardiomegaly",
+    "pneumonia",
+    "anemia",
+    "elevated glucose",
+    "cholesterol",
+    "renal",
+    "dehydration",
+    "no acute disease",
+    "fracture",
+    "effusion",
+    "edema",
+    "hypertension",
+    "tachycardia",
+    "atrial fibrillation",
+    "infiltrate",
+    "consolidation",
+    "nodule",
+    "mass",
+    "obstruction",
+    "ischemia",
+]
+
+# Label aliases the model might use instead of the exact prompt labels.
+# Each tuple is (canonical_key, [accepted_prefixes]).
+_LABEL_ALIASES: List[Tuple[str, List[str]]] = [
+    ("summary",         ["summary", "overview", "impression", "conclusion", "assessment"]),
+    ("key_findings",    ["key findings", "findings", "notable findings", "results", "abnormalities"]),
+    ("recommendations", ["recommendations", "recommendation", "next steps", "plan", "follow-up", "follow up"]),
+    ("disclaimer",      ["disclaimer", "note", "caution", "warning"]),
+]
+
+
+def _match_label(lowered: str) -> Optional[str]:
+    """Return the canonical key if the line starts with a known label alias."""
+    for canonical, aliases in _LABEL_ALIASES:
+        for alias in aliases:
+            if lowered.startswith(alias + ":") or lowered.startswith(alias + " -"):
+                return canonical
+    return None
 
 
 def fallback_parse(report_text: str, report_type: str) -> AnalyzeResponse:
@@ -89,10 +124,18 @@ def fallback_parse(report_text: str, report_type: str) -> AnalyzeResponse:
         recommendations=recommendations,
         disclaimer=DISCLAIMER,
         source="fallback",
+        parse_warning=False,
     )
 
 
 def parse_structured_response(text: str, source: str) -> AnalyzeResponse:
+    """
+    Parse the model's free-text output into a structured response.
+
+    Handles label aliases (e.g. "Overview:" → summary, "Impression:" → summary)
+    so a single mis-label doesn't silently wipe the summary field.
+    Sets parse_warning=True when the summary could not be extracted at all.
+    """
     summary = ""
     findings: List[str] = []
     recommendations: List[str] = []
@@ -101,16 +144,25 @@ def parse_structured_response(text: str, source: str) -> AnalyzeResponse:
     for line in text.splitlines():
         cleaned = line.strip().lstrip("-•* ").strip()
         lowered = cleaned.lower()
-        if lowered.startswith("summary:") or lowered.startswith("summary -"):
-            summary = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
-        elif lowered.startswith("key findings:") or lowered.startswith("key findings -"):
-            raw = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
-            findings = [item.strip() for item in raw.split(",") if item.strip()]
-        elif lowered.startswith("recommendations:") or lowered.startswith("recommendations -"):
-            raw = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
-            recommendations = [item.strip() for item in raw.split(",") if item.strip()]
-        elif lowered.startswith("disclaimer:") or lowered.startswith("disclaimer -"):
-            disclaimer = cleaned.split(":", 1)[1].strip() if ":" in cleaned else cleaned.split("-", 1)[1].strip()
+
+        canonical = _match_label(lowered)
+        if canonical is None:
+            continue
+
+        # Extract the value after the separator (":" or " -")
+        sep = ":" if ":" in cleaned else "-"
+        value = cleaned.split(sep, 1)[1].strip() if sep in cleaned else ""
+
+        if canonical == "summary" and not summary:
+            summary = value
+        elif canonical == "key_findings" and not findings:
+            findings = [item.strip() for item in re.split(r"[,;]", value) if item.strip()]
+        elif canonical == "recommendations" and not recommendations:
+            recommendations = [item.strip() for item in re.split(r"[,;]", value) if item.strip()]
+        elif canonical == "disclaimer":
+            disclaimer = value or disclaimer
+
+    parse_warning = not bool(summary)
 
     if not summary:
         summary = "Summary unavailable from model response."
@@ -125,6 +177,7 @@ def parse_structured_response(text: str, source: str) -> AnalyzeResponse:
         recommendations=recommendations,
         disclaimer=disclaimer,
         source=source,
+        parse_warning=parse_warning,
     )
 
 

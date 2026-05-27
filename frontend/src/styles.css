@@ -170,6 +170,50 @@ textarea {
   transform: translateY(-2px);
 }
 
+.char-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: -0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.secondary {
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--muted);
+  padding: 0.9rem 1.2rem;
+  font-weight: 500;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.secondary:hover {
+  background: rgba(18, 18, 20, 0.06);
+  color: var(--ink);
+}
+
+.parse-warning {
+  background: #fff5e0;
+  border: 1px solid #f5c842;
+  border-left: 4px solid #f5c842;
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  color: #7a5800;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .error {
   background: #ffe7e0;
   border: 1px solid #ffc3b0;

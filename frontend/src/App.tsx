@@ -6,6 +6,7 @@ type AnalyzeResponse = {
   recommendations: string[]
   disclaimer: string
   source?: string
+  parse_warning?: boolean
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -16,6 +17,12 @@ const App = () => {
   const [result, setResult] = useState<AnalyzeResponse | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const handleClear = () => {
+    setReportText('')
+    setResult(null)
+    setError('')
+  }
 
   const handleAnalyze = async () => {
     if (!reportText.trim()) {
@@ -70,8 +77,10 @@ const App = () => {
             <span>Report type</span>
             <select value={reportType} onChange={(event) => setReportType(event.target.value)}>
               <option value="radiology">Radiology</option>
-              <option value="lab">Lab</option>
-              <option value="clinical">Clinical</option>
+              <option value="lab">Lab / Blood test</option>
+              <option value="pathology">Pathology</option>
+              <option value="clinical">Clinical notes</option>
+              <option value="discharge">Discharge summary</option>
               <option value="other">Other</option>
             </select>
           </label>
@@ -84,10 +93,18 @@ const App = () => {
               rows={8}
             />
           </label>
+          <div className="char-count">{reportText.length} characters</div>
           {error && <div className="error">{error}</div>}
-          <button className="primary" onClick={handleAnalyze} disabled={loading}>
-            {loading ? 'Analyzing...' : 'Analyze report'}
-          </button>
+          <div className="button-row">
+            <button className="primary" onClick={handleAnalyze} disabled={loading}>
+              {loading ? 'Analyzing...' : 'Analyze report'}
+            </button>
+            {reportText && (
+              <button className="secondary" onClick={handleClear}>
+                Clear
+              </button>
+            )}
+          </div>
         </section>
 
         <section className="panel results">
@@ -104,6 +121,11 @@ const App = () => {
           )}
           {result && (
             <div className="result-grid">
+              {(result.parse_warning || result.source === 'fallback') && (
+                <div className="parse-warning">
+                  ⚠ The model response couldn't be fully parsed. Results below may be incomplete — please review with a clinician.
+                </div>
+              )}
               {result.source && (
                 <article className="source">
                   <h3>Source</h3>
