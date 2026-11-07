@@ -209,8 +209,6 @@ __marimo__/
 # Node
 frontend/node_modules/
 *.tsbuildinfo
-package-lock.json
 
 # macOS
 .DS_Store
-package-lock.json
