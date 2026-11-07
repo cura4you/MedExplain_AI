@@ -34,3 +34,7 @@ The suite uses synthetic API fixtures to exercise loading, successful and incomp
 To include the actual backend fallback check, point the frontend at an isolated FastAPI instance with no remote model credentials, set a deliberately unavailable local inference endpoint, and configure CORS for the frontend origin. Then add `UI_REAL_BACKEND=true`. This tests integration with the real backend fallback; it does not establish live Hugging Face inference.
 
 See [redesign review and screenshots](../docs/frontend-redesign/README.md). Vite migration notes: [official guide](https://vite.dev/guide/migration).
+
+## Actual hosted-model verification
+
+The later full-project audit also verified the actual browser → FastAPI → hosted Gemini path. Run `scripts/live-check.mjs` with explicit `UI_BASE` and `LIVE_UI_ARTIFACTS` against a correctly configured backend. Unlike fixture tests, it intercepts no API responses and requires `source: hosted_model`. See [live results and limitations](../docs/live-model-verification/README.md). ERNIE/local checkpoint and completed training remain unverified.

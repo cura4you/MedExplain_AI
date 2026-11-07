@@ -15,5 +15,5 @@ if [[ -f "${ROOT_DIR}/backend/requirements.txt" ]]; then
 fi
 
 if [[ -f "${ROOT_DIR}/frontend/package.json" ]]; then
-  (cd "${ROOT_DIR}/frontend" && npm install)
+  (cd "${ROOT_DIR}/frontend" && npm ci)
 fi

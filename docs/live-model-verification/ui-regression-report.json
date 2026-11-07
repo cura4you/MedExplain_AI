@@ -1,0 +1,27 @@
+{
+  "base": "http://127.0.0.1:5182",
+  "verifiedAt": "2026-11-07T19:17:33.959Z",
+  "results": [
+    "Navigation, title, favicon and all six report types",
+    "Blank report validation keeps focus on the editor",
+    "Three fictional samples update report type, text and selection",
+    "Successful response, loading feedback and exact request payload",
+    "Original report tabs support keyboard navigation",
+    "Copy and download preserve the disclaimer",
+    "Editing report text or type removes stale explanations",
+    "Fallback result has a clear warning retained in exports",
+    "Partial model response is distinguished from a keyword fallback",
+    "Empty finding lists do not claim a normal result",
+    "HTTP failures preserve input and provide recoverable messages",
+    "Malformed JSON and schema responses fail safely",
+    "Network failure offers a retry without losing input",
+    "Request timeout is recoverable and preserves the report",
+    "Cancellation prevents a late response replacing a newer result",
+    "Narrow/wide layouts fit at 11 viewport widths, empty and populated",
+    "Reduced motion and skip link work"
+  ],
+  "errors": [],
+  "passed": true,
+  "realBackend": false,
+  "scope": "Synthetic browser fixtures cover UI states. Optional real FastAPI request verifies only keyword fallback; no live Hugging Face model inference is claimed."
+}
