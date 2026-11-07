@@ -14,7 +14,7 @@ Paste any medical report → get a structured plain-language explanation with sa
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
 <br/>
@@ -22,6 +22,16 @@ Paste any medical report → get a structured plain-language explanation with sa
 [**Quick Start**](#-quick-start) · [**API Reference**](#-api-reference) · [**Training Pipeline**](#-training-pipeline) · [**Deployment**](#-deployment)
 
 </div>
+
+---
+
+## New report workspace
+
+The frontend has been redesigned with a deep teal and warm neutral identity, a responsive report/explanation workspace, fictional examples, original-text comparison, and clear loading, error, incomplete-response and fallback states.
+
+![MedExplain AI report workspace](docs/frontend-redesign/preview.png)
+
+[Explore the redesign, before/after screenshots and verification](docs/frontend-redesign/README.md). The organization transfer preserves this repository's original development history. The latest frontend review verifies synthetic UI responses and the real API's keyword fallback; remote model inference and a new hosted deployment remain separate checks.
 
 ---
 
@@ -100,7 +110,7 @@ Every response includes a mandatory safety disclaimer and a `parse_warning` flag
 
 ### Prerequisites
 - Python 3.11+
-- Node.js 18+
+- Node.js 24 recommended (20.19+ / 22.12+ supported)
 
 ### 1 · Backend
 
