@@ -321,6 +321,43 @@ try {
     },
   );
   await check(
+    "Request timeout is recoverable and preserves the report",
+    async () => {
+      await fresh();
+      await sample();
+      await p.evaluate(() => {
+        const original = window.setTimeout;
+        window.setTimeout = function (handler, delay, ...args) {
+          if (delay === 90000) {
+            window.setTimeout = original;
+            return original(handler, 20, ...args);
+          }
+          return original(handler, delay, ...args);
+        };
+      });
+      await p.route("**/api/analyze", async (r) => {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await r
+          .fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(fixture),
+          })
+          .catch(() => {});
+      });
+      await analyze();
+      await p.getByRole("alert").waitFor();
+      assert.match(
+        await p.getByRole("alert").innerText(),
+        /taking longer than expected/,
+      );
+      assert.match(
+        await p.locator("#report-text").inputValue(),
+        /SYNTHETIC EXAMPLE/,
+      );
+    },
+  );
+  await check(
     "Cancellation prevents a late response replacing a newer result",
     async () => {
       await fresh();
