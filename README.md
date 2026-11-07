@@ -24,7 +24,7 @@
   <img src="https://img.shields.io/badge/Vercel-full_stack-243a35?style=flat-square&amp;logo=vercel" alt="Vercel full-stack deployment architecture" />
 </p>
 
-![The exact MedExplain AI homepage, with its editorial typography and report-translation example](docs/readme/homepage.png)
+![The exact MedExplain AI homepage, with its editorial typography and report-translation example](docs/deployment/homepage.png)
 
 ## From a report to a conversation
 
@@ -48,18 +48,18 @@ Use fictional or de-identified text for portfolio exploration. An explanation he
 
 ## A workspace built around understanding
 
-![The actual report editor and explanation workspace, with fictional sample shortcuts and clearly labelled sections](docs/readme/report-workspace.png)
+![The actual report editor and explanation workspace, with fictional sample shortcuts and clearly labelled sections](docs/deployment/workspace.png)
 
 ### A real model response
 
-![An actual hosted-model explanation of a fictional blood report, displayed in the real application](docs/live-model-verification/live-model-result.png)
+![An actual hosted-model explanation of a fictional blood report, displayed in the real application](docs/deployment/public-browser/live-model-result.png)
 
 This result came through the real **browser → FastAPI → hosted Gemini** path. The verification required `source: hosted_model`; a keyword fallback could not pass. It is distinct from the API fixtures used to test error states.
 
 <table>
   <tr>
-    <td width="50%" align="center"><img src="docs/readme/mobile-home.png" alt="Actual MedExplain AI mobile homepage at 390 pixels" width="300" /></td>
-    <td width="50%" align="center"><img src="docs/live-model-verification/live-model-mobile.png" alt="Actual mobile result from the live hosted-model verification" width="300" /></td>
+    <td width="50%" align="center"><img src="docs/deployment/mobile-home.png" alt="Actual MedExplain AI mobile homepage at 390 pixels" width="300" /></td>
+    <td width="50%" align="center"><img src="docs/deployment/public-browser/live-model-mobile.png" alt="Actual mobile result from the live hosted-model verification" width="300" /></td>
   </tr>
   <tr>
     <td align="center"><strong>A calmer first impression</strong><br />A responsive introduction with direct access to the workspace.</td>
@@ -67,7 +67,7 @@ This result came through the real **browser → FastAPI → hosted Gemini** path
   </tr>
 </table>
 
-These are exact application captures, not composited product mockups. Landing/editor images were captured from the local application; model-result images were captured during actual hosted-inference verification. All reports are fictional. [Capture provenance](docs/readme/captures.json) · [Before and after](docs/frontend-redesign/README.md)
+These are exact captures from the **public Vercel deployment**, including actual model results. No product mockups or intercepted API responses are used in this gallery. All reports are fictional. [Capture provenance](docs/deployment/capture-source.json) · [Hosted verification](docs/deployment/README.md) · [Before and after](docs/frontend-redesign/README.md)
 
 ## What is built
 
@@ -178,6 +178,12 @@ Open the URL printed by Vite. `/health` confirms that the API process is healthy
 Invalid report types, absent/whitespace-only text, and text over the limit return 422. Provider failures can return 200 with an explicit fallback; partial parsing returns a warning. Consumers must inspect those fields rather than equating HTTP success with a complete interpretation. [Full reference](docs/API.md)
 
 </details>
+
+## Live on Vercel
+
+**[medexplain-ai-cura4you.vercel.app](https://medexplain-ai-cura4you.vercel.app)** hosts both the React frontend and FastAPI backend. The project is connected to this organization repository for Git deployments. Provider credentials stay in server environment settings; the production browser uses relative API URLs.
+
+The public release passed **7 actual model API cases**, **4 actual Playwright groups**, and **17 UI regression groups at 11 widths**. The hosted checks require model responses rather than accepting keyword fallback. [Production evidence and deployment configuration →](docs/deployment/README.md)
 
 ## Verification
 

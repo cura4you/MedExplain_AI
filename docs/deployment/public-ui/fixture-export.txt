@@ -1,0 +1,14 @@
+MedExplain AI
+Radiology
+
+SUMMARY
+Synthetic browser fixture: the explanation is ready.
+
+KEY FINDINGS
+• Synthetic finding one.
+• Synthetic finding two.
+
+NEXT STEPS TO DISCUSS
+• Discuss the original report with a clinician.
+
+Educational fixture only. Not medical advice.

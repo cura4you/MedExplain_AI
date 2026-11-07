@@ -1,0 +1,18 @@
+{
+  "verifiedAt": "2026-11-07T19:38:13.725Z",
+  "base": "https://medexplain-ai-cura4you.vercel.app",
+  "passed": true,
+  "results": [
+    "Actual blood-test sample reaches hosted model and displays its numeric evidence",
+    "Original-report comparison and real-result exports retain mandatory disclaimer",
+    "A changed radiology sample produces a separate live result preserving negation",
+    "Mobile submission and result rendering work with the actual hosted model"
+  ],
+  "errors": [],
+  "sources": [
+    "hosted_model",
+    "hosted_model",
+    "hosted_model"
+  ],
+  "scope": "Actual browser, FastAPI and hosted Gemini inference over fictional reports. No API mocking or keyword fallback accepted. Does not verify ERNIE weights, completed training, clinical accuracy or a public deployment."
+}
