@@ -9,7 +9,7 @@ type Result = {
   parse_warning?: boolean;
 };
 const API = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"
+  import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:8000" : "")
 ).replace(/\/$/, "");
 const TYPES = [
   ["radiology", "Radiology"],
