@@ -1,0 +1,9 @@
+# Optional GPU experiment dependencies; architecture/version compatibility unverified.
+# Not needed to run the web application or hosted-model verification.
+PyYAML
+unsloth
+datasets
+trl
+transformers
+peft
+huggingface_hub

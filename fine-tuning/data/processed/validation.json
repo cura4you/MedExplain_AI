@@ -1,12 +1,20 @@
 {
   "train": {
     "rows": 7200,
+    "unique_prompts": 150,
+    "duplicate_prompt_rows": 7050,
     "missing_fields": 0,
     "missing_sections": 0
   },
   "eval": {
     "rows": 800,
+    "unique_prompts": 18,
+    "duplicate_prompt_rows": 782,
     "missing_fields": 0,
     "missing_sections": 0
-  }
+  },
+  "cross_split_overlap": 0,
+  "cross_split_template_case_overlap": 0,
+  "scope": "Synthetic reference data checks only; no model inference or clinical validation.",
+  "passed": true
 }

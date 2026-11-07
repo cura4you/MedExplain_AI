@@ -3,9 +3,16 @@
   "train": 7200,
   "eval": 800,
   "report_type_counts": {
-    "radiology": 2008,
-    "lab": 2011,
-    "clinical": 1951,
-    "other": 2030
-  }
+    "radiology": 1333,
+    "lab": 1333,
+    "pathology": 1333,
+    "clinical": 1334,
+    "discharge": 1334,
+    "other": 1333
+  },
+  "scope": "Oversampled synthetic template demonstrations, not independent clinical cases or model evaluation.",
+  "unique_train_prompts": 150,
+  "unique_eval_prompts": 18,
+  "available_unique_template_cases": 28,
+  "heldout_template_cases": 3
 }

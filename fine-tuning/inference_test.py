@@ -29,8 +29,11 @@ def main() -> None:
     args = parser.parse_args()
 
     config = load_config(args.config)
-    model_name = config["model"]["name"]
     output_dir = config["training"]["output_dir"]
+
+    adapter_config = os.path.join(output_dir, "adapter_config.json")
+    if not os.path.isfile(adapter_config) or not any(os.path.isfile(os.path.join(output_dir, name)) for name in ["adapter_model.safetensors", "adapter_model.bin"]):
+        raise SystemExit("A saved adapter configuration and weights are required. No trained adapter was found; base-model inference is not a fine-tuned evaluation.")
 
     try:
         from unsloth import FastLanguageModel
@@ -39,15 +42,11 @@ def main() -> None:
         raise SystemExit("Missing inference deps. Install requirements.txt and extras for unsloth.") from exc
 
     model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=model_name,
+        model_name=output_dir,
         max_seq_length=config["model"]["max_seq_length"],
         dtype=None,
         load_in_4bit=config["model"]["load_in_4bit"],
     )
-
-    if os.path.exists(output_dir):
-        model = FastLanguageModel.get_peft_model(model)
-        model.load_adapter(output_dir)
 
     FastLanguageModel.for_inference(model)
     streamer = TextStreamer(tokenizer)

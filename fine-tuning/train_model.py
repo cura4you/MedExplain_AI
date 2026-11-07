@@ -12,9 +12,23 @@ def load_config(path: str) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train LoRA adapters with Unsloth.")
     parser.add_argument("--config", default=os.path.join("fine-tuning", "config.yaml"))
+    parser.add_argument("--allow-template-data", action="store_true", help="Explicitly allow repeated synthetic demo templates; not clinical training data.")
     args = parser.parse_args()
 
     config = load_config(args.config)
+    if not args.allow_template_data:
+        raise SystemExit("The bundled dataset is an oversampled template demonstration, not a clinical training corpus. Review the data and pass --allow-template-data only for an explicit experiment.")
+    import json
+    from validate_data import case_key
+    with open(config["data"]["train_path"], encoding="utf-8") as handle:
+        train_rows = [json.loads(line) for line in handle if line.strip()]
+        train_prompts = {row["prompt"] for row in train_rows}
+    with open(config["data"]["eval_path"], encoding="utf-8") as handle:
+        eval_rows = [json.loads(line) for line in handle if line.strip()]
+        eval_prompts = {row["prompt"] for row in eval_rows}
+    case_overlap = {case_key(row) for row in train_rows} & {case_key(row) for row in eval_rows}
+    if not train_prompts or not eval_prompts or train_prompts & eval_prompts or case_overlap:
+        raise SystemExit("Training requires nonempty, disjoint train/evaluation prompts.")
     model_name = config["model"]["name"]
     output_dir = config["training"]["output_dir"]
 
@@ -84,6 +98,7 @@ def main() -> None:
 
     trainer.train()
     trainer.save_model(output_dir)
+    tokenizer.save_pretrained(output_dir)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,7 @@
 {
   "count": 800,
-  "avg_completion_chars": 337.74125,
-  "disclaimer_rate": 1.0
+  "avg_completion_chars": 342.215,
+  "disclaimer_rate": 1.0,
+  "scope": "Reference completion text statistics only; not model output or clinical evaluation.",
+  "model_inference_performed": false
 }

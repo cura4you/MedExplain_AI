@@ -1,0 +1,11 @@
+{
+  "scope": "Original committed reference-template dataset before correction; no model inference performed.",
+  "train_rows": 7200,
+  "eval_rows": 800,
+  "unique_train_prompts": 224,
+  "unique_eval_prompts": 214,
+  "overlapping_unique_eval_prompts": 214,
+  "unique_eval_overlap_fraction": 1.0,
+  "training_artifacts_found": false,
+  "conclusion": "Reference completion statistics were mislabelled as model evaluation. All unique evaluation prompts also appeared in training; no independent model-quality claim follows."
+}
